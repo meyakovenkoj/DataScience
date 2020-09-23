@@ -167,13 +167,7 @@ select Product.ProductID,
        City,
        StateProvince,
        CountryRegion,
-       ISNULL(sum(OrderQty), 0) as SalesAmount,
---        GROUPING(Product.ProductID),
---        GROUPING(SalesPerson),
---        GROUPING(SalesOrderHeader.CustomerID),
---        GROUPING(City),
---        GROUPING(StateProvince),
---        GROUPING(CountryRegion)
+       ISNULL(sum(OrderQty), 0) as SalesAmount
 from SalesLT.Product left join SalesLT.SalesOrderDetail on Product.ProductID = SalesOrderDetail.ProductID
     left join SalesLT.SalesOrderHeader on SalesOrderDetail.SalesOrderID = SalesOrderHeader.SalesOrderID
     left join SalesLT.Customer on SalesOrderHeader.CustomerID = Customer.CustomerID
