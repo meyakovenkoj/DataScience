@@ -89,12 +89,16 @@ from SalesLT.Customer
     join SalesLT.Product on SalesOrderDetail.ProductID = Product.ProductID
     join SalesLT.CustomerAddress on Customer.CustomerID = CustomerAddress.CustomerID
     join SalesLT.Address on CustomerAddress.AddressID = Address.AddressID
-group by cube(
-    Product.ProductID,
+group by grouping sets(
+  (Product.ProductID,
   Customer.CustomerID,
-  ShipToAddressID,
-  BillToAddressID,
-  CustomerAddress.AddressID
+  ShipToAddressID),
+  (Product.ProductID,
+  Customer.CustomerID,
+  BillToAddressID),
+  (Product.ProductID,
+  Customer.CustomerID,
+  CustomerAddress.AddressID)
     );
 ```
 
