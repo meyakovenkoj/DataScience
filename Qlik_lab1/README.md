@@ -6,8 +6,6 @@ This task was similar as first one in Lab12. We should create dashboards in Qlik
 
 We have used same data from Azure example SalesLT.
 
-![](img/tables.png)
-
 ### 1. Create following dashboards in QlikView:
 
 - A. Report about income from sales by product, client and sales person. Please mind discounts.
