@@ -2,7 +2,7 @@
 title: "Lab_4"
 author: "Yakovenko Ivan"
 date: "11/10/2020"
-output: html_document
+output: rmarkdown::github_document
 ---
 
 ```{r setup, include=FALSE}
