@@ -21,3 +21,7 @@ with open(file=sys.argv[1], mode='r') as file:
         print('There are {0} rows'.format(len(rows)))
 
 connection.close()
+
+
+
+159 + 66 + 83 + 29 + 73

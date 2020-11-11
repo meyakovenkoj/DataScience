@@ -1,4 +1,4 @@
-
+*/.additional/
 # Created by https://www.toptal.com/developers/gitignore/api/venv,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=venv,visualstudiocode
 
@@ -29,3 +29,4 @@ pip-selfcheck.json
 .history
 
 # End of https://www.toptal.com/developers/gitignore/api/venv,visualstudiocode
+.Rproj.user
