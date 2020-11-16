@@ -1,0 +1,170 @@
+---
+title: "Lab 5"
+author: "Yakovenko Ivan"
+date: "11/11/2020"
+output: rmarkdown::github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+if (!require('ggplot2'))
+{
+  install.packages('ggplot2', dependencies = TRUE)
+  library('ggplot2')
+}
+if (!require('arules'))
+{
+  install.packages('arules', dependencies = TRUE)
+  library('arules')
+}
+if (!require('arulesViz'))
+{
+  install.packages('arulesViz', dependencies = TRUE)
+  library('arulesViz')
+}
+```
+First we need to load our data. I've used `read.transactions` to read transaction data from csv.
+
+```{r}
+transact_data <- read.transactions(
+        file = "https://hyper.mephi.ru/assets/courseware/v1/4528e593d5d574a075e15cab1da2383b/asset-v1:MEPhIx+CS712DS+2020Fall+type@asset+block/AssociationRules.csv",
+        format = "basket",
+        sep = " ",
+        rm.duplicates = TRUE
+)
+summary(transact_data)
+```
+# Data Exploration and Rules Inference
+## Frequent item table
+```{r}
+freq_tab <- data.frame(itemFrequency(transact_data, type = "absolute"))
+freq_tab <- cbind(rownames(freq_tab), freq_tab)
+rownames(freq_tab) <- NULL
+names(freq_tab) <- c("item","freq")
+freq_tab[freq_tab$freq == max(freq_tab$freq),]
+```
+
+## Frequent item plot
+```{r}
+itemFrequencyPlot(transact_data, type="absolute", topN=15)
+```
+
+to find max length of transaction:
+```{r}
+max(size(transact_data))
+```
+
+# Rules with apriori
+```{r}
+rules_1 <- apriori(transact_data, parameter = list(supp = 0.01, conf = 0.0, target = "rules"))
+rules_2 <- apriori(transact_data, parameter = list(supp = 0.01, conf = 0.5, target = "rules"))
+```
+
+```{r}
+cat("For sup=1% & conf=0%: ", length(rules_1), "\n")
+cat("For sup=1% & conf=50%: ", length(rules_2), "\n")
+```
+
+
+# Rules Vusialization
+## Rules Graphical Analysis
+
+support x confidence with shading on lift
+
+```{r}
+plot(rules_2, method = "scatterplot", measure = c('support', 'confidence'), shading = 'lift', jitter = 0)
+```
+
+support x lift with shading on confidence
+
+```{r}
+plot(rules_2, method = "scatterplot", measure = c('support', 'lift'), shading = 'confidence', jitter = 0)
+```
+
+## Three rules
+
+
+```{r}
+rules_3 <- apriori(transact_data, parameter = list(supp = 0.1, conf = 0.5))
+inspect(head(rules_3, n = 3, by='lift', decreasing = TRUE))
+```
+## Coincidental rules
+Identify the most interesting rules by extracting the rules in which the Confidence is >0.8. Observe the output of the data table for the most interesting rules.
+
+Sort the rules stating the highest lift first. Provide the 10 rules with the lowest lift. Do they appear to be coincidental (Use lift = 2 as baseline for coincidence)? 
+
+But if we get lift 2 as base we get only 8 values?
+```{r, results='hide'}
+rules_4 <- apriori(transact_data, parameter = list(supp = 0.01, conf = 0.8))
+tab_rules4 <- inspect(head(rules_4, n = -1, by='lift', decreasing = TRUE))
+```
+
+```{r}
+tab_rules4[tab_rules4$lift<2.0,]
+```
+
+
+## Matrix
+```{r}
+plot(rules_4, shading = c('lift', 'confidence'), method = 'matrix')
+```
+
+
+Extract the three rules with the highest lift.
+```{r}
+tab_rules4[1:3,]
+```
+
+
+## Graph
+```{r}
+rules_5 <- apriori(transact_data, parameter = list(supp = 0.01, conf = 0.5))
+rules_graph <- head(rules_5, n = 3, by = 'lift')
+plot(rules_graph, method = 'graph')
+```
+
+
+## Training and Test Sets
+```{r}
+training_data <- transact_data[1:8000,]
+test_data <- transact_data[8001:10000,]
+
+training_rules <- apriori(training_data, parameter = list(supp = 0.01, conf = 0.1))
+test_rules <- apriori(test_data, parameter = list(supp = 0.01, conf = 0.1))
+```
+
+```{r}
+union_dt_1 <- DATAFRAME(intersect(training_rules, test_rules))
+union_dt_2 <- DATAFRAME(intersect(test_rules, training_rules))
+```
+
+
+```{r}
+names(union_dt_1) <- c("LHS","RHS","support_test","confidence_test","coverage_test","lift_test", "count_test")
+```
+
+```{r}
+res <- merge(union_dt_1, union_dt_2)
+head(res[c('LHS', 'RHS', 'support', 'support_test', 'confidence', 'confidence_test')], n=10)
+```
+
+Training set = 10786 rules
+Test set = 12276 rules 
+Intersection = 8938 rules
+
+```{r}
+summary(res[c('support', 'support_test', 'confidence', 'confidence_test')])
+```
+
+
+So we get:
+
+support_test    Mean   :`0.02081`
+support         Mean   :`0.02043`
+confidence_test Mean   :`0.2972`
+confidence      Mean   :`0.2938`
+
+And conclude that results of smaller test set is respond to our training set.
