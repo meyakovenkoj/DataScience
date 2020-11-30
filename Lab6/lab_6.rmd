@@ -1,0 +1,142 @@
+---
+title: "Lab 6"
+author: "Yakovenko Ivan"
+date: "11/30/2020"
+output:
+  pdf_document: default
+  rmarkdown::github_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load zeta dataset, and remove all  meanhouseholdincome duplicates (or more formally only females records should be in the dataset) that does not have any duplicate rows of data (done in homework 3.2). 
+
+```{r}
+df <- as.data.frame(read.table('https://hyper.mephi.ru/assets/courseware/v1/36b8d9e2f04765276b91998c79d4a607/asset-v1:MEPhIx+CS712DS+2020Fall+type@asset+block/zeta.csv', header = TRUE, sep = ','))
+
+head(df, n=10)
+```
+
+```{r}
+library(dplyr)
+df <- df[!duplicated(df[ , c("meanhouseholdincome")]),]
+head(df, n=10)
+```
+
+Remove the columns zcta and sex from the imported table.
+
+```{r}
+df2 <- df[!names(df) %in% c("zcta", "sex", "X")]
+head(df2, n=10)
+```
+
+
+Remove outliers by creating subsets of the original data so that: 
+`8 < meaneducation < 18`
+`10,000 < meanhouseholdincome < 200,000`
+`0 < meanemployment < 3`
+`20 < meanage < 60`
+
+
+```{r}
+clear_df <-subset(df2, 
+         8 < meaneducation & meaneducation < 18 & 
+         10000 < meanhouseholdincome & meanhouseholdincome < 200000 & 
+         0 < meanemployment & meanemployment < 3 & 
+         20 < meanage & meanage < 60)
+head(clear_df, n=10)
+```
+
+
+Create a variable called log_income = log10(meanhouseholdincome)
+
+```{r}
+ready_df <- cbind(clear_df, log10(clear_df$meanhouseholdincome))
+head(ready_df, n=10)
+```
+
+Rename the columns meanage, meaneducation, and meanemployment as age, education, and employment, respectively
+
+```{r}
+colnames(ready_df) <- c("age", "education", "employment", "meanhouseholdincome", "log_income")
+head(ready_df, n=10)
+```
+
+
+##Linear Regression Analysis
+
+`a.` We will be analyzing this data with income as the dependent variable and the other columns as independent variables.  Create a scatter plot showing the effect age has on log_income and paste it here.  Do you see any linear relationship between the two variables?
+
+```{r}
+plot(ready_df$age, ready_df$log_income, xlab="age", ylab="log_income")
+library(hexbin)
+library(RColorBrewer)
+my_colors=colorRampPalette(rev(brewer.pal(11,'Spectral')))
+hexbinplot( ready_df$log_income ~ ready_df$age, xlab="age", ylab="log_income", colramp=my_colors)
+hexbinplot(ready_df$log_income ~ ready_df$age, trans = sqrt, inv = function(x) x^2, type = c("q","r"), xlab="age", ylab="log_income", colramp=my_colors)
+```
+
+`b.` Create a linear regression model between log_income and age.  What is the interpretation of the t-value? What kind of t-value would indicate a significant coefficient?
+
+```{r}
+results <- lm(formula=log_income ~ age, data=ready_df)
+summary(results)
+```
+
+
+`c.` R-squared is a goodness-of-fit measure for linear regression models. This statistic indicates the percentage of the variance in the dependent variable that the independent variables explain collectively. R-squared measures the strength of the relationship between your model and the dependent variable on a convenient 0 – 100% scale.
+
+Usually, the larger the R^2^, the better the regression model fits your observations. 
+
+`d.` The F critical value is also called the F statistic. If your calculated F value in a test is larger than your F statistic, you can reject the null hypothesis. However, the statistic is only one measure of significance in an F Test. You should also consider the p value. The p value is determined by the F statistic and is the probability your results could have happened by chance.
+
+To get strong model F-statictic should be much bigger than 1 and p-value should be small.
+
+`e.` Multiple R-squared:  0.01207,	Adjusted R-squared:  0.01204 
+R-value is near 0, that means model is not a good fit.
+
+`f.` Create a scatter plot showing the effect education has on log_income.  Do you see any linear relationship between the two variables?
+
+```{r}
+plot(ready_df$education, ready_df$log_income, xlab="education", ylab="log_income")
+hexbinplot(ready_df$education ~ ready_df$log_income, xlab="education", ylab="log_income", trans = sqrt, inv = function(x) x^2, type = c("q","r"), colramp=my_colors)
+```
+
+`g.` Analyze a detailed summary of a linear regression model between log_income and education.  What is the R-squared value?  Is the model a good fit?  Is it better than the previous model?
+
+Now we have:
+Multiple R-squared:  0.5412,	Adjusted R-squared:  0.5411 
+
+That is better -> R-value closer to 1. Model is better.
+
+```{r}
+results2 <- lm(formula=log_income ~ education, data=ready_df)
+summary(results2)
+```
+
+`h.` Analyze a detailed summary of a linear regression model between the dependent variable log_income, and the independent variables age, education, and employment.  Is this model a good fit?  Why?  What conclusions can be made about the different independent variables?
+
+Here we have R-value ~ 0,57 that is closer to 1, high F-value and very small p-value. That means model is a good fit.
+
+```{r}
+results3 <- lm(formula=log_income ~ age + education + employment, data=ready_df)
+summary(results3)
+```
+
+`i.` by `9%` would income increase for every unit of education completed, while all other independent variables remained constant.
+
+`j.` Create a graph that contains a y = x line and uses the multiple regression model to plot the predicted data points against the actual data points of the training set. 
+
+```{r}
+#library(ggplot2)
+#ggplot
+ready_df["predict"] <- predict(results3, ready_df)
+plot(ready_df$log_income, ready_df$predict, ylab="Predicted data", xlab="Training data")
+abline(a=0, b=1, col="red")
+hexbinplot(ready_df$log_income ~ ready_df$predict, ylab="Predicted data", xlab="Training data", trans = sqrt, inv = function(x) x^2, type = c("q","r"), colramp=my_colors)
+```
+
+`k.` As we see on plot y=x is almost repeat our predicted_data ~ training_data plot
