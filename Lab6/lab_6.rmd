@@ -3,8 +3,8 @@ title: "Lab 6"
 author: "Yakovenko Ivan"
 date: "11/30/2020"
 output:
-  pdf_document: default
   rmarkdown::github_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -42,11 +42,13 @@ Remove outliers by creating subsets of the original data so that:
 
 
 ```{r}
-clear_df <-subset(df2, 
-         8 < meaneducation & meaneducation < 18 & 
-         10000 < meanhouseholdincome & meanhouseholdincome < 200000 & 
-         0 < meanemployment & meanemployment < 3 & 
-         20 < meanage & meanage < 60)
+clear_df <-df2[
+         8 < df2$meaneducation & df2$meaneducation < 18 & 
+         10000 < df2$meanhouseholdincome & df2$meanhouseholdincome < 200000 & 
+         0 < df2$meanemployment & df2$meanemployment < 3 & 
+         20 < df2$meanage & df2$meanage < 60,]
+df2
+clear_df
 head(clear_df, n=10)
 ```
 
@@ -76,10 +78,12 @@ library(hexbin)
 library(RColorBrewer)
 my_colors=colorRampPalette(rev(brewer.pal(11,'Spectral')))
 hexbinplot( ready_df$log_income ~ ready_df$age, xlab="age", ylab="log_income", colramp=my_colors)
-hexbinplot(ready_df$log_income ~ ready_df$age, trans = sqrt, inv = function(x) x^2, type = c("q","r"), xlab="age", ylab="log_income", colramp=my_colors)
+hexbinplot(ready_df$log_income ~ ready_df$age, trans = sqrt, inv = function(x) x^2, type = c("g","r"), xlab="age", ylab="log_income", colramp=my_colors)
 ```
 
 `b.` Create a linear regression model between log_income and age.  What is the interpretation of the t-value? What kind of t-value would indicate a significant coefficient?
+
+если t-value большое то данные более репрезентативны для нашей гипотезы, иначе мы не можем делать выводы
 
 ```{r}
 results <- lm(formula=log_income ~ age, data=ready_df)
@@ -102,7 +106,7 @@ R-value is near 0, that means model is not a good fit.
 
 ```{r}
 plot(ready_df$education, ready_df$log_income, xlab="education", ylab="log_income")
-hexbinplot(ready_df$education ~ ready_df$log_income, xlab="education", ylab="log_income", trans = sqrt, inv = function(x) x^2, type = c("q","r"), colramp=my_colors)
+hexbinplot(ready_df$education ~ ready_df$log_income, xlab="education", ylab="log_income", type = c("g","r"), colramp=my_colors)
 ```
 
 `g.` Analyze a detailed summary of a linear regression model between log_income and education.  What is the R-squared value?  Is the model a good fit?  Is it better than the previous model?
@@ -114,6 +118,7 @@ That is better -> R-value closer to 1. Model is better.
 
 ```{r}
 results2 <- lm(formula=log_income ~ education, data=ready_df)
+ready_df
 summary(results2)
 ```
 
@@ -124,6 +129,7 @@ Here we have R-value ~ 0,57 that is closer to 1, high F-value and very small p-v
 ```{r}
 results3 <- lm(formula=log_income ~ age + education + employment, data=ready_df)
 summary(results3)
+
 ```
 
 `i.` by `9%` would income increase for every unit of education completed, while all other independent variables remained constant.
@@ -133,10 +139,16 @@ summary(results3)
 ```{r}
 #library(ggplot2)
 #ggplot
-ready_df["predict"] <- predict(results3, ready_df)
+ready_df["predict"] <- predict(results3, select(ready_df,"age", "education", "employment"))
 plot(ready_df$log_income, ready_df$predict, ylab="Predicted data", xlab="Training data")
 abline(a=0, b=1, col="red")
-hexbinplot(ready_df$log_income ~ ready_df$predict, ylab="Predicted data", xlab="Training data", trans = sqrt, inv = function(x) x^2, type = c("q","r"), colramp=my_colors)
+hexbinplot(ready_df$log_income ~ ready_df$predict, ylab="Log Income", xlab="Predicted Income", trans = sqrt, inv = function(x) x^2, type = c("g","r"), colramp=my_colors)
 ```
 
 `k.` As we see on plot y=x is almost repeat our predicted_data ~ training_data plot
+
+
+
+
+
+
