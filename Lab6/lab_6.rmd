@@ -47,8 +47,6 @@ clear_df <-df2[
          10000 < df2$meanhouseholdincome & df2$meanhouseholdincome < 200000 & 
          0 < df2$meanemployment & df2$meanemployment < 3 & 
          20 < df2$meanage & df2$meanage < 60,]
-df2
-clear_df
 head(clear_df, n=10)
 ```
 
@@ -118,7 +116,6 @@ That is better -> R-value closer to 1. Model is better.
 
 ```{r}
 results2 <- lm(formula=log_income ~ education, data=ready_df)
-ready_df
 summary(results2)
 ```
 
