@@ -1,0 +1,152 @@
+---
+title: "Lab_8"
+author: "Yakovenko Ivan"
+date: "12/13/2020"
+output: 
+  rmarkdown::github_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Firstly we need to load data
+
+```{r}
+nbtrain <- read.csv(
+        file = "https://hyper.mephi.ru/assets/courseware/v1/66b19c28d0c9940f359aa6da5ad25a3b/asset-v1:MEPhIx+CS712DS+2020Fall+type@asset+block/nbtrain.csv",
+        sep = ","
+)
+head(nbtrain)
+```
+#Then we divide data frame to trainning and testing dataset
+```{r}
+traindata <- as.data.frame(nbtrain[1:9010,]) 
+testdata <- as.data.frame(nbtrain[9011:10010,])
+```
+
+```{r, echo=FALSE}
+if (!require('e1071'))
+{
+  install.packages('e1071', dependencies = TRUE)
+  library('e1071')
+}
+if (!require('ggplot2'))
+{
+  install.packages('ggplot2', dependencies = TRUE)
+  library('ggplot2')
+}
+```
+
+# We use naiveBayes algorithm to count probabilities and create our model
+
+P(C|A) = (P(A|C)*P(C))/P(A)
+
+```{r}
+model <- naiveBayes(as.factor(income) ~ age+sex+educ, traindata)
+model
+```
+
+# Model let us use the prediction on our testing dataset
+```{r}
+results <- predict(model,testdata)
+table(results)
+```
+
+# Confusion matrix gives us graphical representation of our prediction
+Here we can see that our prediction give 0 to people with 50-80K income and that is not true
+```{r}
+confusion_matrix <- as.data.frame(table(results, testdata$income))
+
+ggplot(data = confusion_matrix,
+       mapping = aes(x = results,
+                     y = Var2)) +
+  geom_tile(aes(fill = Freq)) +
+  geom_text(aes(label = Freq)) +
+  scale_fill_gradient(low = "blue",
+                      high = "red",
+                      trans = "log1p") +
+  labs(x = "Predicted", y = "Actual")
+```
+# Misclassification rate
+To count it we use formula: 1-target/sum
+```{r}
+tab <- table(testdata$income,results)
+all_miss <- 1 - (sum(diag(tab)) / sum(tab))
+miss_10_50 <- 1 - (tab[1,1] / sum(tab[1,]))
+miss_50_80 <- 1 - (tab[2,2] / sum(tab[2,]))
+miss_gt_80 <- 1 - (tab[3,3] / sum(tab[3,]))
+cat('for overall ')
+all_miss
+cat('for 10-50K ')
+miss_10_50
+cat('for 50-80K ')
+miss_50_80
+cat('for GT 80K ')
+miss_gt_80
+```
+
+# Naive Bayes for sex
+now we create model for formula `sex ~ age + educ + income`
+```{r}
+model2 <- naiveBayes(as.factor(sex) ~ age + educ + income, traindata)
+model2
+results2 <- predict(model2,testdata)
+tab2 <- table(testdata$sex,results2)
+all_miss2 <- 1 - (sum(diag(tab2)) / sum(tab2))
+miss_f <- 1 - (tab2[1,1] / sum(tab2[1,]))
+miss_m <- 1 - (tab2[2,2] / sum(tab2[2,]))
+cat('for overall ')
+all_miss2
+cat('for female ')
+miss_f
+cat('for male ')
+miss_m
+```
+
+# And plot second confusion matrix
+
+```{r}
+confusion_matrix2 <- as.data.frame(table(results2, testdata$sex))
+
+ggplot(data = confusion_matrix2,
+       mapping = aes(x = results2,
+                     y = Var2)) +
+  geom_tile(aes(fill = Freq)) +
+  geom_text(aes(label = Freq)) +
+  scale_fill_gradient(low = "blue",
+                      high = "red",
+                      trans = "log1p") +
+  labs(x = "Predicted", y = "Actual")
+```
+
+
+# Test our model
+we prepare data set: get 3500 from Male and 3500 from Female with random and bind them
+then we create `new_model` and count as previous our misclassification rate
+```{r}
+f_data <- traindata[traindata$sex == 'F',]
+m_data <- traindata[traindata$sex == 'M',]
+library('dplyr')
+f_data <- sample_n(f_data, 3500)
+m_data <- sample_n(m_data, 3500)
+union_data <- rbind(f_data, m_data)
+
+new_model <- naiveBayes(as.factor(sex) ~ age + educ + income, union_data)
+new_model
+results3 <- predict(new_model,testdata)
+tab3 <- table(testdata$sex,results3)
+all_miss3 <- 1 - (sum(diag(tab3)) / sum(tab3))
+miss_f <- 1 - (tab3[1,1] / sum(tab3[1,]))
+miss_m <- 1 - (tab3[2,2] / sum(tab3[2,]))
+cat('for overall ')
+all_miss2
+cat('for female ')
+miss_f
+cat('for male ')
+miss_m
+```
+
+# Conclusion
+Naive Bayes is interesting algorithm, that can create interesting and in many cases useful models.
