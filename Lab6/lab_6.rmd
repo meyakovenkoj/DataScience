@@ -103,8 +103,10 @@ R-value is near 0, that means model is not a good fit.
 `f.` Create a scatter plot showing the effect education has on log_income.  Do you see any linear relationship between the two variables?
 
 ```{r}
+new_df <- cbind(ready_df, ed2 = ready_df$education * ready_df$education)
 plot(ready_df$education, ready_df$log_income, xlab="education", ylab="log_income")
 hexbinplot(ready_df$education ~ ready_df$log_income, xlab="education", ylab="log_income", type = c("g","r"), colramp=my_colors)
+hexbinplot(new_df$meanhouseholdincome ~ (new_df$ed2 + new_df$education) , xlab="education^2", ylab="income", type = c("g","r"), colramp=my_colors)
 ```
 
 `g.` Analyze a detailed summary of a linear regression model between log_income and education.  What is the R-squared value?  Is the model a good fit?  Is it better than the previous model?
