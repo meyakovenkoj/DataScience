@@ -9,4 +9,4 @@ rules_2 <- apriori(transact_data, parameter = list(supp = 0.01, conf = 0.5, targ
 plot(rules_2, method = "scatterplot", measure = c('support', 'lift'), shading = 'confidence', jitter = 0, interactive = TRUE)
 
 rules_4 <- apriori(transact_data, parameter = list(supp = 0.01, conf = 0.8))
-plot(rules_4, shading = c('lift', 'confidence'), method = 'matrix', engine = "interactive")
+plot(rules_4, shading = c('lift', 'confidence'), method = 'matrix', interactive=TRUE)

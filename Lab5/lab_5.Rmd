@@ -30,6 +30,8 @@ if (!require('arulesViz'))
 }
 ```
 First we need to load our data. I've used `read.transactions` to read transaction data from csv.
+For ‘basket’ format, each line in the transaction data file represents a transaction where the items (item labels) are separated by the characters specified by sep.
+
 
 ```{r}
 transact_data <- read.transactions(
@@ -38,12 +40,13 @@ transact_data <- read.transactions(
         sep = " "
 )
 transact_data
-summary(transact_data)
 ```
 # Data Exploration and Rules Inference
 ## Frequent item table
 
 to find most frequent item we find item with max freq
+itemFrequency - For example, it is used to get the single item support from an object of class transactions without mining.
+
 ```{r}
 freq_tab <- data.frame(itemFrequency(transact_data, type = "absolute"))
 freq_tab <- cbind(rownames(freq_tab), freq_tab)
@@ -66,6 +69,9 @@ max(size(transact_data))
 # Rules with apriori
 
 Mine the Association rules with a minimum Support of 1% and a minimum Confidence of 0%.
+Mine frequent itemsets, association rules or association hyperedges using the Apriori algorithm. The Apriori algorithm employs level-wise search for frequent itemsets.
+
+
 
 ```{r}
 rules_1 <- apriori(transact_data, parameter = list(supp = 0.01, conf = 0.0, target = "rules"))
@@ -85,6 +91,8 @@ cat("For sup=1% & conf=50%: ", length(rules_2), "\n")
 
 Create a scatter plot comparing the parameters support and confidence on the axis, and lift with shading.
 
+Lift measures how many times more often X and Y occur together than expected if they are statisti- cally independent of each other. Lift is a measure [6] of how X and Y are really related rather than coinci- dentally happening together 
+
 ```{r}
 plot(rules_2, method = "scatterplot", measure = c('support', 'confidence'), shading = 'lift', jitter = 0, engine = "htmlwidget")
 ```
@@ -92,11 +100,14 @@ plot(rules_2, method = "scatterplot", measure = c('support', 'confidence'), shad
 *Where are the rules located that would be considered interesting and useful?*
 High lift & confidence, red and higher points
 
+```{r}
+library('plotly')
+```
 
 Create a scatter plot measuring support vs. lift; record your observations.
 
 ```{r}
-plot(rules_2, method = "scatterplot", measure = c('support', 'lift'), shading = 'confidence', jitter = 0, engine = "htmlwidget")
+plot(rules_2, method = "scatterplot", measure = c('support', 'lift'), shading = 'confidence', jitter = 0, engine = "plotly")
 ```
 
 *Create a scatter plot measuring support vs. lift; record your observations.*
@@ -165,21 +176,34 @@ test_rules <- apriori(test_data, parameter = list(supp = 0.01, conf = 0.1, targe
 ```
 
 ```{r}
-train_dt <- DATAFRAME(training_rules)
-test_dt <- DATAFRAME(test_rules)
+train_dt <- DATAFRAME(intersect(training_rules, test_rules))
+test_dt <- DATAFRAME(intersect(test_rules, training_rules))
+
+train_dt
+test_dt
 ```
 
 Training set = 10786 rules
 Test set = 12276 rules 
+intersect = 8938 rules
 
 So we get means as:
 
 ```{r}
-cat('Support test:\t', mean(test_dt$support), '\n')
-cat('Support:\t', mean(train_dt$support), '\n')
-cat('Confidence test:', mean(test_dt$confidence), '\n')
-cat('Confidence:\t', mean(train_dt$confidence))
+#cat('Support test:\t', mean(test_dt$support), '\n')
+#cat('Support:\t', mean(train_dt$support), '\n')
+#cat('Confidence test:', mean(test_dt$confidence), '\n')
+#cat('Confidence:\t', mean(train_dt$confidence))
+
+inspect(head(sort(training_rules, by='lift', decreasing = TRUE), n=100))
+```
+```{r}
+inspect(head(sort(test_rules, by='lift', decreasing = TRUE), n=100))
 ```
 
+
+```{r}
+inspect(head(sort(intersect(training_rules, test_rules), by='lift', decreasing = TRUE), n=10))
+```
 
 Generated rules are correct and work fine on test data. The proof of work is similar mean on different datasets (training and test).
