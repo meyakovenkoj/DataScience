@@ -24,29 +24,4 @@
 
     src/bin/madpack -p postgres -c postgres/postgres@localhost:5432/postgres install
 
-## 5) Several other madpack commands can now be run:
-
-### Run install check, on all modules:
-
-    src/bin/madpack -p postgres -c postgres/postgres@localhost:5432/postgres install-check
-
-### Run install check, on a specific module, say svm:
-
-    src/bin/madpack -p postgres -c postgres/postgres@localhost:5432/postgres install-check -t svm
-
-### Run dev check, on all modules (more comprehensive than install check):
-
-    src/bin/madpack -p postgres -c postgres/postgres@localhost:5432/postgres dev-check
-
-### Run dev check, on a specific module, say svm:
-
-    src/bin/madpack -p postgres -c postgres/postgres@localhost:5432/postgres dev-check -t svm
-
-### Reinstall MADlib:
-
-    src/bin/madpack -p postgres -c postgres/postgres@localhost:5432/postgres reinstall
-
-## 6) Kill and remove containers (after exiting the container):
-
-    docker kill madlib
-    docker rm madlib
+where `localhost:5432/postgres` is your database. I have used db called datascience so I type: `localhost:5432/datascience`
