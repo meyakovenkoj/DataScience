@@ -1,0 +1,223 @@
+---
+title: "Lab_9"
+author: "Yakovenko Ivan"
+date: "12/21/2020"
+output:
+  rmarkdown::github_document: default
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Let's load data
+
+```{r}
+survey <- read.csv(
+        file = "https://hyper.mephi.ru/assets/courseware/v1/345e8b1c6ea11120575066ec4ac58f4a/asset-v1:MEPhIx+CS712DS+2020Fall+type@asset+block/survey.csv",
+        sep = ",",
+        header = TRUE
+)
+head(survey)
+```
+Create test and training datasets
+```{r}
+traindata <- as.data.frame(survey[1:600,])
+testdata <- as.data.frame(survey[601:750,])
+```
+
+
+```{r, echo=FALSE}
+# install dependencies
+if (!require('rpart'))
+{
+  install.packages('rpart', dependencies = TRUE)
+  library('rpart')
+}
+
+if (!require('rpart.plot'))
+{
+  install.packages('rpart.plot', dependencies = TRUE)
+  library('rpart.plot')
+}
+
+if (!require('ROCR'))
+{
+  install.packages('ROCR', dependencies = TRUE)
+  library('ROCR')
+}
+
+if (!require('ggplot2'))
+{
+  install.packages('ggplot2', dependencies = TRUE)
+  library('ggplot2')
+}
+```
+
+Let's see on summary
+```{r}
+cat("# Train data\n")
+summary(traindata)
+cat("\n# Test data\n")
+summary(testdata)
+```
+
+
+# Creating model
+Here we use traindata to create our model
+```{r}
+fit <- rpart(as.factor(MYDEPV) ~ Price + Income + Age, method="class",
+data=traindata, parms=list(split='information'))
+printcp(fit)
+```
+
+# Plotting tree
+
+```{r}
+rpart.plot(fit, type=4, extra=1)
+```
+
+# Confusion matrix
+
+```{r}
+pred3 = predict(fit, traindata, type="class")
+confusion_matrix <- as.data.frame(table(as.factor(pred3), traindata$MYDEPV))
+ggplot(data = confusion_matrix,
+       mapping = aes(x = Var1,
+                     y = Var2)) +
+  geom_tile(aes(fill = Freq)) +
+  geom_text(aes(label = Freq)) +
+  scale_fill_gradient(low = "blue",
+                      high = "red",
+                      trans = "log1p") +
+  labs(x = "Predicted", y = "Actual")
+```
+
+# Misclassification rate
+we count it as was shown in Lab8:
+For first tree using train data
+```{r}
+tab <- table(traindata$MYDEPV,pred3)
+all_miss <- 1 - (sum(diag(tab)) / sum(tab))
+miss_zero <- 1 - (tab[1,1] / sum(tab[1,]))
+miss_one <- 1 - (tab[2,2] / sum(tab[2,]))
+
+cat('for overall ')
+all_miss
+cat('for zero ')
+miss_zero
+cat('for one ')
+miss_one
+```
+
+
+# Plot the ROC Curve
+
+First get all the probability scores on the training data
+
+```{r}
+pred = predict(fit, type="class")
+```
+
+Create predictions object (it used for ROCR classifiers)
+
+```{r}
+predObj = prediction(as.numeric(pred), traindata$MYDEPV)
+```
+
+We now create the ROC curve object (for plot) and the AUC object with performance function
+
+```{r}
+rocObj = performance(predObj, measure="tpr", x.measure="fpr")
+aucObj = performance(predObj, measure="auc") 
+```
+
+And we get AUC
+
+```{r}
+auc = aucObj@y.values[[1]]  
+auc
+```
+
+So let's plot it
+
+```{r}
+plot(rocObj, main = paste("Area under the curve:", auc))
+```
+
+# Misclassification rate for test
+And let's create this rates using testdata
+```{r}
+pred4 = predict(fit, testdata, type="class")
+tab <- table(testdata$MYDEPV,pred4)
+all_miss <- 1 - (sum(diag(tab)) / sum(tab))
+miss_zero <- 1 - (tab[1,1] / sum(tab[1,]))
+miss_one <- 1 - (tab[2,2] / sum(tab[2,]))
+
+cat('for overall ')
+all_miss
+cat('for zero ')
+miss_zero
+cat('for one ')
+miss_one
+```
+
+
+
+# Gini tree
+
+Creating model using Gini splitting index
+```{r}
+fit2 <- rpart(MYDEPV ~ Price + Income + Age, method="class",
+data=traindata, parms=list(split='gini'))
+printcp(fit2)
+```
+
+# Plot our tree
+```{r}
+rpart.plot(fit2, type=4, extra=1)
+```
+
+As we see there is no difference
+
+# Pruning Tree
+We use prune function with cp = 0.011538 as it is CP for minimum xerror in previous cell
+```{r}
+pruned = prune(fit2, cp = 0.011538)
+rpart.plot(pruned, type=4, extra=1)
+```
+
+# Score Your Final Model
+and we again count our Misclassification rates and build Yet Another Confusion matrix
+```{r}
+pred6 = predict(pruned, traindata, type="class")
+confusion_matrix <- as.data.frame(table(as.factor(pred6), traindata$MYDEPV))
+ggplot(data = confusion_matrix,
+       mapping = aes(x = Var1,
+                     y = Var2)) +
+  geom_tile(aes(fill = Freq)) +
+  geom_text(aes(label = Freq)) +
+  scale_fill_gradient(low = "blue",
+                      high = "red",
+                      trans = "log1p") +
+  labs(x = "Predicted", y = "Actual")
+```
+
+```{r}
+pred8 = predict(pruned, traindata, type="class")
+tab2 <- table(traindata$MYDEPV,pred8)
+all_miss2 <- 1 - (sum(diag(tab2)) / sum(tab2))
+miss_zero2 <- 1 - (tab2[1,1] / sum(tab2[1,]))
+miss_one2 <- 1 - (tab2[2,2] / sum(tab2[2,]))
+
+cat('for overall ')
+all_miss2
+cat('for zero ')
+miss_zero2
+cat('for one ')
+miss_one2
+```
+
+# Conclusion
+Results are a bit improved but both models are quite simmilar. Decision Trees are interesting algorithm which can also visualize data.
