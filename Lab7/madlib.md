@@ -59,4 +59,5 @@ Start jupyter
 
     jupyter lab --no-browser --ip="0.0.0.0" --port=5555 --allow-root
 
-Now you can use your host webbrowser. Jupyter will show you command with token to access web gui
+Now you can use your host webbrowser. Jupyter will show you command with token to access web gui like:
+`http://127.0.0.1:5555/?token=TOKEN`
