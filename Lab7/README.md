@@ -1,27 +1,24 @@
 # Get started
 
-To use MADLib checkout my [modified instruction](madlib.md)
-
 First we load ipython package sql
 It can be installed by
-
 ```bash
 pip install ipython-sql
 ```
+
 
 ```python
 %load_ext sql
 ```
 
-    The sql extension is already loaded. To reload it, use:
-      %reload_ext sql
+Connect to our database in *docker*
 
-Connect to our database in _docker_
 
 ```python
 # PostgreSQL local
 %sql postgresql://postgres@localhost:5432/datascience
 ```
+
 
 ```python
 %sql select madlib.version();
@@ -29,6 +26,10 @@ Connect to our database in _docker_
 
      * postgresql://postgres@localhost:5432/datascience
     1 rows affected.
+
+
+
+
 
 <table>
     <tr>
@@ -39,17 +40,19 @@ Connect to our database in _docker_
     </tr>
 </table>
 
-## Load data
 
+
+## Load data
 Create table `survey` to load data. All rows are integers
+
 
 ```python
 %%sql
 DROP TABLE IF EXISTS survey;
 
-create table survey(mydepv integer,
-                    price integer,
-                    income integer,
+create table survey(mydepv integer, 
+                    price integer, 
+                    income integer, 
                     age integer);
 ```
 
@@ -63,7 +66,11 @@ create table survey(mydepv integer,
 
     []
 
+
+
 Load from file. it was downloaded from [Hyper MEPhIx](https://hyper.mephi.ru/assets/courseware/v1/345e8b1c6ea11120575066ec4ac58f4a/asset-v1:MEPhIx+CS712DS+2020Fall+type@asset+block/survey.csv)
+
+
 
 ```python
 %%sql
@@ -82,7 +89,10 @@ CSV HEADER;
 
     []
 
+
+
 Check rows - Alright :)
+
 
 ```python
 %sql select * from survey limit 10;
@@ -90,6 +100,10 @@ Check rows - Alright :)
 
      * postgresql://postgres@localhost:5432/datascience
     10 rows affected.
+
+
+
+
 
 <table>
     <tr>
@@ -160,13 +174,15 @@ Check rows - Alright :)
     </tr>
 </table>
 
-## Modify data
 
+
+## Modify data
 Add columns `price20` and `price30`
+
 
 ```python
 %%sql
-alter table survey
+alter table survey 
 add column price20 integer;
 ```
 
@@ -179,9 +195,12 @@ add column price20 integer;
 
     []
 
+
+
+
 ```python
 %%sql
-alter table survey
+alter table survey 
 add column price30 integer;
 ```
 
@@ -194,7 +213,10 @@ add column price30 integer;
 
     []
 
+
+
 Set them as 1 or 0 for prices = 10 or 20 or 30
+
 
 ```python
 %%sql
@@ -216,7 +238,10 @@ update survey set price30=0 where price!=30;
 
     []
 
+
+
 Check them
+
 
 ```python
 %sql select * from survey limit 10;
@@ -224,6 +249,10 @@ Check them
 
      * postgresql://postgres@localhost:5432/datascience
     10 rows affected.
+
+
+
+
 
 <table>
     <tr>
@@ -316,7 +345,10 @@ Check them
     </tr>
 </table>
 
+
+
 Create table with columns of dependent and independent
+
 
 ```python
 %%sql
@@ -337,16 +369,19 @@ CREATE TABLE survey2 (
 
     []
 
+
+
 Insert values MYDEPV and array of others
+
 
 ```python
 %%sql
 insert into survey2(mydepv, ind_values)
-select survey.mydepv::bool,
-ARRAY[1,
-      survey.income,
-      survey.age,
-      survey.price20,
+select survey.mydepv::bool, 
+ARRAY[1, 
+      survey.income, 
+      survey.age, 
+      survey.price20, 
       survey.price30] as arr from survey;
 ```
 
@@ -359,7 +394,10 @@ ARRAY[1,
 
     []
 
+
+
 Check them
+
 
 ```python
 %sql select * from survey2 limit 10;
@@ -367,6 +405,10 @@ Check them
 
      * postgresql://postgres@localhost:5432/datascience
     10 rows affected.
+
+
+
+
 
 <table>
     <tr>
@@ -415,7 +457,10 @@ Check them
     </tr>
 </table>
 
+
+
 ## Create logistic regression with MADLib
+
 
 ```python
 %%sql
@@ -430,6 +475,10 @@ SELECT madlib.logregr_train('survey2',
     Done.
     1 rows affected.
 
+
+
+
+
 <table>
     <tr>
         <th>logregr_train</th>
@@ -439,14 +488,17 @@ SELECT madlib.logregr_train('survey2',
     </tr>
 </table>
 
+
+
 ### Summary
+
 
 ```python
 %%sql
 SELECT unnest(array['intercept',
-                    'income',
-                    'age',
-                    'price20',
+                    'income', 
+                    'age', 
+                    'price20', 
                     'price30']) as attribute,
        unnest(coef) as coefficient,
        unnest(std_err) as standard_error,
@@ -458,6 +510,10 @@ SELECT unnest(array['intercept',
 
      * postgresql://postgres@localhost:5432/datascience
     5 rows affected.
+
+
+
+
 
 <table>
     <tr>
@@ -510,18 +566,21 @@ SELECT unnest(array['intercept',
     </tr>
 </table>
 
+
+
 Create results table with odds_ratio and prediction
+
 
 ```python
 %%sql
 drop table if exists res_survey;
-create table res_survey(mydepv integer,
-                        price integer,
-                        income integer,
+create table res_survey(mydepv integer, 
+                        price integer, 
+                        income integer, 
                         age integer,
                         price20 integer,
                         price30 integer,
-                        odds_ratio real,
+                        odds_ratio real, 
                         prediction real);
 ```
 
@@ -535,20 +594,23 @@ create table res_survey(mydepv integer,
 
     []
 
-Put values to result table and count odds*ratio as \_coef1 + coef2\*param1 + coef3\*param2 + coef4\*param3 + coef5\*param4*
+
+
+Put values to result table and count odds\_ratio as _coef1 + coef2\*param1 + coef3\*param2 + coef4\*param3 + coef5\*param4_
+
 
 ```python
 %%sql
 insert into res_survey
 select s.mydepv,
-        s.price,
-        s.income,
-        s.age,
-        s.price20,
+        s.price, 
+        s.income, 
+        s.age, 
+        s.price20, 
         s.price30,
-        (coef[1] + coef[2] * s.income +
-        coef[3] * s.age +
-        coef[4] * s.price20 +
+        (coef[1] + coef[2] * s.income + 
+        coef[3] * s.age + 
+        coef[4] * s.price20 + 
         coef[5] * s.price30) as odds_ratio,
         0 as prediction
 from survey_logregr, survey as s;
@@ -563,7 +625,10 @@ from survey_logregr, survey as s;
 
     []
 
-Count prediction as _exp(odds_ratio) / (1 + exp(odds_ratio))_
+
+
+Count prediction as _exp(odds\_ratio) / (1 + exp(odds\_ratio))_
+
 
 ```python
 %%sql
@@ -579,15 +644,18 @@ update res_survey set prediction = (exp(odds_ratio) / (1+exp(odds_ratio)));
 
     []
 
+
+
 Make predictions with coefs
+
 
 ```python
 %%sql
 select exp_odds_ratio / (1 + exp_odds_ratio) as prediction
 from
-(select  exp(coef[1] + coef[2] * 19.114 +
-        coef[3] * 33 +
-        coef[4] * 1 +
+(select  exp(coef[1] + coef[2] * 58 + 
+        coef[3] * 25 + 
+        coef[4] * 1 + 
         coef[5] * 0) as exp_odds_ratio
 from survey_logregr) as tmp;
 ```
@@ -595,16 +663,53 @@ from survey_logregr) as tmp;
      * postgresql://postgres@localhost:5432/datascience
     1 rows affected.
 
+
+
+
+
 <table>
     <tr>
         <th>prediction</th>
     </tr>
     <tr>
-        <td>0.0412046455698882</td>
+        <td>0.829105381494624</td>
     </tr>
 </table>
 
+
+
+
+```python
+%%sql
+select exp_odds_ratio / (1 + exp_odds_ratio) as prediction
+from
+(select  exp(coef[1] + coef[2] * 9.490 + 
+        coef[3] * 51 + 
+        coef[4] * 1 + 
+        coef[5] * 0) as exp_odds_ratio
+from survey_logregr) as tmp;
+```
+
+     * postgresql://postgres@localhost:5432/datascience
+    1 rows affected.
+
+
+
+
+
+<table>
+    <tr>
+        <th>prediction</th>
+    </tr>
+    <tr>
+        <td>0.0228618415177979</td>
+    </tr>
+</table>
+
+
+
 Count overall with \+ from predicted data
+
 
 ```python
 %%sql
@@ -613,6 +718,10 @@ select sum(mydepv) as mydepv, sum(prediction)::integer as predicted from res_sur
 
      * postgresql://postgres@localhost:5432/datascience
     1 rows affected.
+
+
+
+
 
 <table>
     <tr>
@@ -625,125 +734,4 @@ select sum(mydepv) as mydepv, sum(prediction)::integer as predicted from res_sur
     </tr>
 </table>
 
-And finaly see our table
 
-```python
-%%sql
-select * from res_survey limit 10;
-```
-
-     * postgresql://postgres@localhost:5432/datascience
-    10 rows affected.
-
-<table>
-    <tr>
-        <th>mydepv</th>
-        <th>price</th>
-        <th>income</th>
-        <th>age</th>
-        <th>price20</th>
-        <th>price30</th>
-        <th>odds_ratio</th>
-        <th>prediction</th>
-    </tr>
-    <tr>
-        <td>1</td>
-        <td>30</td>
-        <td>59</td>
-        <td>55</td>
-        <td>0</td>
-        <td>1</td>
-        <td>1.29387</td>
-        <td>0.784801</td>
-    </tr>
-    <tr>
-        <td>0</td>
-        <td>30</td>
-        <td>24</td>
-        <td>37</td>
-        <td>0</td>
-        <td>1</td>
-        <td>-3.84386</td>
-        <td>0.0209621</td>
-    </tr>
-    <tr>
-        <td>0</td>
-        <td>30</td>
-        <td>76</td>
-        <td>43</td>
-        <td>0</td>
-        <td>1</td>
-        <td>3.06201</td>
-        <td>0.955298</td>
-    </tr>
-    <tr>
-        <td>0</td>
-        <td>30</td>
-        <td>45</td>
-        <td>32</td>
-        <td>0</td>
-        <td>1</td>
-        <td>-1.31523</td>
-        <td>0.211613</td>
-    </tr>
-    <tr>
-        <td>0</td>
-        <td>30</td>
-        <td>21</td>
-        <td>46</td>
-        <td>0</td>
-        <td>1</td>
-        <td>-3.91456</td>
-        <td>0.0195591</td>
-    </tr>
-    <tr>
-        <td>0</td>
-        <td>30</td>
-        <td>49</td>
-        <td>44</td>
-        <td>0</td>
-        <td>1</td>
-        <td>-0.379425</td>
-        <td>0.406265</td>
-    </tr>
-    <tr>
-        <td>0</td>
-        <td>30</td>
-        <td>31</td>
-        <td>32</td>
-        <td>0</td>
-        <td>1</td>
-        <td>-3.11786</td>
-        <td>0.0423766</td>
-    </tr>
-    <tr>
-        <td>0</td>
-        <td>30</td>
-        <td>22</td>
-        <td>32</td>
-        <td>0</td>
-        <td>1</td>
-        <td>-4.27669</td>
-        <td>0.0136983</td>
-    </tr>
-    <tr>
-        <td>0</td>
-        <td>30</td>
-        <td>29</td>
-        <td>32</td>
-        <td>0</td>
-        <td>1</td>
-        <td>-3.37538</td>
-        <td>0.0330739</td>
-    </tr>
-    <tr>
-        <td>1</td>
-        <td>30</td>
-        <td>59</td>
-        <td>55</td>
-        <td>0</td>
-        <td>1</td>
-        <td>1.29387</td>
-        <td>0.784801</td>
-    </tr>
-</table>
