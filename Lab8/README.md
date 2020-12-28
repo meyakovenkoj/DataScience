@@ -1,11 +1,11 @@
-Lab\_8
-================
+# Lab_8
+
 Yakovenko Ivan
 12/13/2020
 
 # Firstly we need to load data
 
-``` r
+```r
 nbtrain <- read.csv(
         file = "https://hyper.mephi.ru/assets/courseware/v1/66b19c28d0c9940f359aa6da5ad25a3b/asset-v1:MEPhIx+CS712DS+2020Fall+type@asset+block/nbtrain.csv",
         sep = ","
@@ -23,8 +23,8 @@ head(nbtrain)
 
 \#Then we divide data frame to trainning and testing dataset
 
-``` r
-traindata <- as.data.frame(nbtrain[1:9010,]) 
+```r
+traindata <- as.data.frame(nbtrain[1:9010,])
 testdata <- as.data.frame(nbtrain[9011:10010,])
 ```
 
@@ -36,35 +36,35 @@ testdata <- as.data.frame(nbtrain[9011:10010,])
 
 P(C|A) = (P(A|C)\*P(C))/P(A)
 
-``` r
+```r
 model <- naiveBayes(as.factor(income) ~ age+sex+educ, traindata)
 model
 ```
 
-    ## 
+    ##
     ## Naive Bayes Classifier for Discrete Predictors
-    ## 
+    ##
     ## Call:
     ## naiveBayes.default(x = X, y = Y, laplace = laplace)
-    ## 
+    ##
     ## A-priori probabilities:
     ## Y
-    ##     10-50K     50-80K     GT 80K 
-    ## 0.80266371 0.12563818 0.07169811 
-    ## 
+    ##     10-50K     50-80K     GT 80K
+    ## 0.80266371 0.12563818 0.07169811
+    ##
     ## Conditional probabilities:
     ##         age
     ## Y             20-30      31-45      GT 45
     ##   10-50K 0.20796460 0.34457965 0.44745575
     ##   50-80K 0.08303887 0.39752650 0.51943463
     ##   GT 80K 0.06811146 0.34055728 0.59133127
-    ## 
+    ##
     ##         sex
     ## Y                F         M
     ##   10-50K 0.4798119 0.5201881
     ##   50-80K 0.2871025 0.7128975
     ##   GT 80K 0.2058824 0.7941176
-    ## 
+    ##
     ##         educ
     ## Y           College     Others   Prof/Phd
     ##   10-50K 0.24585177 0.73976770 0.01438053
@@ -73,13 +73,13 @@ model
 
 # Model let us use the prediction on our testing dataset
 
-``` r
+```r
 results <- predict(model,testdata)
 table(results)
 ```
 
     ## results
-    ## 10-50K 50-80K GT 80K 
+    ## 10-50K 50-80K GT 80K
     ##    981      0     19
 
 # Confusion matrix gives us graphical representation of our prediction
@@ -87,7 +87,7 @@ table(results)
 Here we can see that our prediction give 0 to people with 50-80K income
 and that is not true
 
-``` r
+```r
 confusion_matrix <- as.data.frame(table(results, testdata$income))
 
 ggplot(data = confusion_matrix,
@@ -104,7 +104,7 @@ ggplot(data = confusion_matrix,
 ![](lab_8_files/figure-gfm/unnamed-chunk-6-1.png)<!-- --> \#
 Misclassification rate To count it we use formula: 1-target/sum
 
-``` r
+```r
 tab <- table(testdata$income,results)
 all_miss <- 1 - (sum(diag(tab)) / sum(tab))
 miss_10_50 <- 1 - (tab[1,1] / sum(tab[1,]))
@@ -115,43 +115,43 @@ cat('for overall ')
 
     ## for overall
 
-``` r
+```r
 all_miss
 ```
 
     ## [1] 0.205
 
-``` r
+```r
 cat('for 10-50K ')
 ```
 
     ## for 10-50K
 
-``` r
+```r
 miss_10_50
 ```
 
     ## [1] 0.007566204
 
-``` r
+```r
 cat('for 50-80K ')
 ```
 
     ## for 50-80K
 
-``` r
+```r
 miss_50_80
 ```
 
     ## [1] 1
 
-``` r
+```r
 cat('for GT 80K ')
 ```
 
     ## for GT 80K
 
-``` r
+```r
 miss_gt_80
 ```
 
@@ -161,39 +161,39 @@ miss_gt_80
 
 now we create model for formula `sex ~ age + educ + income`
 
-``` r
+```r
 model2 <- naiveBayes(as.factor(sex) ~ age + educ + income, traindata)
 model2
 ```
 
-    ## 
+    ##
     ## Naive Bayes Classifier for Discrete Predictors
-    ## 
+    ##
     ## Call:
     ## naiveBayes.default(x = X, y = Y, laplace = laplace)
-    ## 
+    ##
     ## A-priori probabilities:
     ## Y
-    ##       F       M 
-    ## 0.43596 0.56404 
-    ## 
+    ##       F       M
+    ## 0.43596 0.56404
+    ##
     ## Conditional probabilities:
     ##    age
     ## Y       20-30     31-45     GT 45
     ##   F 0.1802444 0.3475051 0.4722505
     ##   M 0.1837859 0.3536009 0.4626131
-    ## 
+    ##
     ##    educ
     ## Y      College     Others   Prof/Phd
     ##   F 0.32128310 0.65707739 0.02163951
     ##   M 0.28040142 0.68103109 0.03856749
-    ## 
+    ##
     ##    income
     ## Y       10-50K     50-80K     GT 80K
     ##   F 0.88340122 0.08273931 0.03385947
     ##   M 0.74025974 0.15879575 0.10094451
 
-``` r
+```r
 results2 <- predict(model2,testdata)
 tab2 <- table(testdata$sex,results2)
 all_miss2 <- 1 - (sum(diag(tab2)) / sum(tab2))
@@ -204,31 +204,31 @@ cat('for overall ')
 
     ## for overall
 
-``` r
+```r
 all_miss2
 ```
 
     ## [1] 0.418
 
-``` r
+```r
 cat('for female ')
 ```
 
     ## for female
 
-``` r
+```r
 miss_f
 ```
 
     ## [1] 0.7517564
 
-``` r
+```r
 cat('for male ')
 ```
 
     ## for male
 
-``` r
+```r
 miss_m
 ```
 
@@ -236,7 +236,7 @@ miss_m
 
 # And plot second confusion matrix
 
-``` r
+```r
 confusion_matrix2 <- as.data.frame(table(results2, testdata$sex))
 
 ggplot(data = confusion_matrix2,
@@ -258,24 +258,24 @@ we prepare data set: get 3500 from Male and 3500 from Female with random
 and bind them then we create `new_model` and count as previous our
 misclassification rate
 
-``` r
+```r
 f_data <- traindata[traindata$sex == 'F',]
 m_data <- traindata[traindata$sex == 'M',]
 library('dplyr')
 ```
 
-    ## 
+    ##
     ## Attaching package: 'dplyr'
 
     ## The following objects are masked from 'package:stats':
-    ## 
+    ##
     ##     filter, lag
 
     ## The following objects are masked from 'package:base':
-    ## 
+    ##
     ##     intersect, setdiff, setequal, union
 
-``` r
+```r
 f_data <- sample_n(f_data, 3500)
 m_data <- sample_n(m_data, 3500)
 union_data <- rbind(f_data, m_data)
@@ -284,34 +284,34 @@ new_model <- naiveBayes(as.factor(sex) ~ age + educ + income, union_data)
 new_model
 ```
 
-    ## 
+    ##
     ## Naive Bayes Classifier for Discrete Predictors
-    ## 
+    ##
     ## Call:
     ## naiveBayes.default(x = X, y = Y, laplace = laplace)
-    ## 
+    ##
     ## A-priori probabilities:
     ## Y
-    ##   F   M 
-    ## 0.5 0.5 
-    ## 
+    ##   F   M
+    ## 0.5 0.5
+    ##
     ## Conditional probabilities:
     ##    age
     ## Y       20-30     31-45     GT 45
     ##   F 0.1762857 0.3537143 0.4700000
     ##   M 0.1828571 0.3511429 0.4660000
-    ## 
+    ##
     ##    educ
     ## Y      College     Others   Prof/Phd
     ##   F 0.31971429 0.65857143 0.02171429
     ##   M 0.27457143 0.68857143 0.03685714
-    ## 
+    ##
     ##    income
     ## Y       10-50K     50-80K     GT 80K
     ##   F 0.88314286 0.08314286 0.03371429
     ##   M 0.74542857 0.15428571 0.10028571
 
-``` r
+```r
 results3 <- predict(new_model,testdata)
 tab3 <- table(testdata$sex,results3)
 all_miss3 <- 1 - (sum(diag(tab3)) / sum(tab3))
@@ -322,31 +322,31 @@ cat('for overall ')
 
     ## for overall
 
-``` r
+```r
 all_miss2
 ```
 
     ## [1] 0.418
 
-``` r
+```r
 cat('for female ')
 ```
 
     ## for female
 
-``` r
+```r
 miss_f
 ```
 
     ## [1] 0.1358314
 
-``` r
+```r
 cat('for male ')
 ```
 
     ## for male
 
-``` r
+```r
 miss_m
 ```
 
