@@ -12,7 +12,7 @@ theta = zeros(size(X, 2), 1);
 
 % ---------------------- Sample Solution ----------------------
 
-
+% Counting pseudo inv matrix
 theta = pinv(X'*X)*X'*y;
 
 % -------------------------------------------------------------

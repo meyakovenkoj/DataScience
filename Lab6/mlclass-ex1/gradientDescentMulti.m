@@ -21,6 +21,7 @@ for iter = 1:num_iters
 
 
     hypdiff = X*theta-y;
+    % Use formulae
     theta = theta - (alpha * (sum((hypdiff * ones(1,columns(X))).*X) / m))';
 
 

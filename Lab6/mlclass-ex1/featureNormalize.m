@@ -27,7 +27,7 @@ sigma = zeros(1, size(X, 2));
 %       
 
 
-
+% Using internal funcs
 mu = mean(X);
 sigma = std(X);
 X_norm = (X - mu) ./ sigma;
