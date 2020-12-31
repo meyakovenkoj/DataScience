@@ -15,10 +15,7 @@ J = 0;
 predictions = X*theta;              % predictions of hypothesis on examples
 sqrErrors   = (predictions - y).^2; % squared errors
 
-J = 1/(2*m) * sum(sqrErrors);
-
-
-#h = (theta0 + theta1*x)
+J = 1/(2*m) * sum(sqrErrors); %counting cost with formula
 
 
 % =========================================================================
